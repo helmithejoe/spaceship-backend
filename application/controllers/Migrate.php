@@ -3,7 +3,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Migrate extends CI_Controller {
     
-    public function __construct() {
+    public function __construct()
+    {
+        // Construct the parent class
         parent::__construct();
         if ( ! is_cli()) die('Migration can only be run under CLI');
     }
