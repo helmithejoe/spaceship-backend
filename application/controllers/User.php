@@ -8,35 +8,13 @@ class User extends CI_Controller {
         // construct the parent class
         parent::__construct();
         
+        $this->load->helper('email');
+        $this->load->helper('url');
         $this->load->model('user_model');
-    }
-    
-    private function _send_email()
-    {
-        $this->load->library('email');
-        $config = array();
-        $config['protocol'] = 'smtp';
-        $config['smtp_host'] = 'ssl://smtp.gmail.com';
-        $config['smtp_user'] = 'helmi.mailer@gmail.com';
-        $config['smtp_pass'] = 'ilxbkdetosrmjnjd';
-        $config['smtp_port'] = 465;
-        $config['charset'] = 'utf-8';
-        $config['newline'] = "\r\n";
-        $config['mailtype'] = 'text'; // or html
-        $this->email->initialize($config);
-
-        $this->email->from('helmi.mailer@gmail.com', 'Spaceship');
-        $this->email->to('helmi.informatika@gmail.com');
-
-        $this->email->subject('Email Test');
-        $this->email->message('Testing the email class.');
-
-        $this->email->send();
     }
     
     public function signup()
     {
-        //$this->_send_email();
         $raw_input = $this->input->raw_input_stream;
         
         // decode json as array
@@ -47,7 +25,12 @@ class User extends CI_Controller {
         // if user created successfully
         if ($result['success'])
         {
-            $data = array('user_id' => $result);
+            $url = base_url("user/activate/{$result['user_id']}/{$result['activation_key']}");
+            $message = $this->load->view('emails/activate', array('url' => $url), TRUE);
+            $subject = 'Spaceship Registration';
+            $recipient = $result['email'];
+            send_email($recipient, $subject, $message);
+            
             $this->output->set_status_header(200);
             $this->load->view('json_success');
         }
@@ -58,9 +41,23 @@ class User extends CI_Controller {
         }
     }
     
+    public function activate($user_id = '', $activation_key = '')
+    {
+        $result = $this->user_model->activate_user($user_id, $activation_key);
+        
+        // if user activated successfully
+        if ($result)
+        {
+            $this->load->view('activate_success');
+        }
+        else
+        {
+            $this->load->view('activate_error');
+        }
+    }
+    
     public function login()
     {
-        //$this->_send_email();
         $raw_input = $this->input->raw_input_stream;
         
         // decode json as array
