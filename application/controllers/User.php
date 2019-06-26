@@ -37,7 +37,7 @@ class User extends CI_Controller {
         else
         {
             $this->output->set_status_header(400);
-            $this->load->view('json_error', array('error' => json_encode($result)));
+            $this->load->view('json_error', array('error' => json_encode($result['error'])));
         }
     }
     
