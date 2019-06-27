@@ -1,6 +1,12 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
+use ReallySimpleJWT\Token;
+use ReallySimpleJWT\Parse;
+use ReallySimpleJWT\Jwt;
+use ReallySimpleJWT\Validate;
+use ReallySimpleJWT\Encode;
+
 class User extends CI_Controller {
     
     public function __construct()
@@ -11,6 +17,42 @@ class User extends CI_Controller {
         $this->load->helper('email');
         $this->load->helper('url');
         $this->load->model('user_model');
+    }
+    
+    public function test()
+    {
+        $user_id = 12;
+        $secret = 'sec!ReT423*&';
+        $expiration = time() + 3600;
+        $issuer = 'localhost';
+        
+        $token = Token::create($user_id, $secret, $expiration, $issuer);
+        
+        echo $token;
+    }
+    
+    public function validate()
+    {
+        $token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMiwiaXNzIjoibG9jYWxob3N0IiwiZXhwIjoiMjAxOS0wNi0yNyAwMzoxMjoxOCIsInN1YiI6bnVsbCwiYXVkIjpudWxsfQ.9XEmSxbVY6HfMjKctS5TL7eFgJmU2v3HaRZtEkkq6VY';
+        $secret = 'sec!ReT423*&';
+
+        $jwt = new Jwt($token, $secret);
+
+        $parse = new Parse($jwt, new Validate(), new Encode());
+
+        $parsed = $parse->validate()
+            ->validateExpiration()
+            ->validateNotBefore()
+            ->parse();
+
+        // Return the token header claims as an associative array.
+        $header = $parsed->getHeader();
+
+        // Return the token payload claims as an associative array.
+        $payload = $parsed->getPayload();
+        
+        print_r($header);
+        print_r($payload);
     }
     
     public function signup()
