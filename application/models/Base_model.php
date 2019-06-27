@@ -41,12 +41,14 @@ class Base_model extends CI_Model {
     protected function update_data($table, $data, $where)
     {
         $data = $this->db->escape_str($data);
+        $where = $this->db->escape_str($where);
         return $this->db->update($table, $data, $where);
     }
     
     protected function get_data($table, $where)
     {
         $query = $this->db->get_where($table, $where);
+        $where = $this->db->escape_str($where);
         return $query->row();
     }
 }

@@ -5,6 +5,8 @@ require_once('Base_model.php');
 
 class User_model extends Base_model {
     
+    private $_table = 'users';
+    
     public function __construct()
     {
         // construct the parent class
@@ -73,7 +75,7 @@ class User_model extends Base_model {
         
         $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
         
-        if ($user_id = $this->insert_data('users', $data))
+        if ($user_id = $this->insert_data($this->_table, $data))
         {
             return array(
                 'success' => TRUE,
@@ -91,7 +93,7 @@ class User_model extends Base_model {
         {
             $data = array('active_flag' => '1');
             $where = array('id' => $user_id);
-            return $this->update_data('users', $data, $where);
+            return $this->update_data($this->_table, $data, $where);
         }
         return FALSE;
     }
@@ -101,7 +103,7 @@ class User_model extends Base_model {
         $email = $input['email'];
         $password = $input['password'];
         $where = array('email' => $email);
-        $user = $this->get_data('users', $where);
+        $user = $this->get_data($this->_table, $where);
         
         $error = '';
         if ( ! $user)
@@ -137,7 +139,8 @@ class User_model extends Base_model {
     public function get_profile($user_id)
     {
         $where = array('id' => $user_id);
-        $user = $this->get_data('users', $where);
+        $user = $this->get_data($this->_table, $where);
+        if ( ! $user) return FALSE;
         unset($user->password);
         return $user;
     }

@@ -53,12 +53,12 @@ class User extends CI_Controller {
             send_email($recipient, $subject, $message);
             
             $this->output->set_status_header(200);
-            $this->load->view('json_success', array('data' => '[]'));
+            return $this->load->view('json_success', array('data' => '[]'));
         }
         else
         {
             $this->output->set_status_header(400);
-            $this->load->view('json_error', array('error' => json_encode($result['error'])));
+            return $this->load->view('json_error', array('error' => json_encode($result['error'])));
         }
     }
     
@@ -69,11 +69,11 @@ class User extends CI_Controller {
         // if user activated successfully
         if ($result)
         {
-            $this->load->view('activate_success');
+            return $this->load->view('activate_success');
         }
         else
         {
-            $this->load->view('activate_error');
+            return $this->load->view('activate_error');
         }
     }
     
@@ -102,12 +102,12 @@ class User extends CI_Controller {
             $data = $result['data'];
             $jwt_token = jwt_get_token($data['user_id']);
             $data['jwt_token'] = $jwt_token;
-            $this->load->view('json_success', array('data' => json_encode($data)));
+            return $this->load->view('json_success', array('data' => json_encode($data)));
         }
         else
         {
             $error = $result['error'];
-            $this->load->view('json_error', array('error' => json_encode($error)));
+            return $this->load->view('json_error', array('error' => json_encode($error)));
         }
     }
     
@@ -121,7 +121,12 @@ class User extends CI_Controller {
             return $this->load->view('json_error', array('error' => json_encode($error)));
         }
         $user_id = $payload['user_id'];
-        $data = $this->user_model->get_profile($user_id);
-        $this->load->view('json_success', array('data' => json_encode($data)));
+        $result = $this->user_model->get_profile($user_id);
+        if ( ! $result)
+        {
+            $error = array('User not found');
+            return $this->load->view('json_error', array('error' => json_encode($error)));
+        }
+        return $this->load->view('json_success', array('data' => json_encode($result)));
     }
 }
