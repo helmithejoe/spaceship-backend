@@ -96,4 +96,50 @@ class User_model extends Base_model {
         return FALSE;
     }
     
+    public function login_user($input)
+    {
+        $email = $input['email'];
+        $password = $input['password'];
+        $where = array('email' => $email);
+        $user = $this->get_data('users', $where);
+        
+        $error = '';
+        if ( ! $user)
+        {
+            $error = 'Invalid User';
+        }
+        elseif($user->active_flag == '0')
+        {
+            $error = 'User is inactive';
+        }
+        elseif ( ! password_verify($password, $user->password))
+        {
+            $error = 'Invalid Password';
+        }
+        
+        if ($error == '')
+        {
+            return array(
+                'success' => TRUE,
+                'data' => array(
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                )
+            );
+        }
+        
+        return array(
+            'error' => array($error),
+            'success' => FALSE
+        );  
+    }
+    
+    public function get_profile($user_id)
+    {
+        $where = array('id' => $user_id);
+        $user = $this->get_data('users', $where);
+        unset($user->password);
+        return $user;
+    }
+    
 }

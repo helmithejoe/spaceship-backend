@@ -1,12 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-use ReallySimpleJWT\Token;
-use ReallySimpleJWT\Parse;
-use ReallySimpleJWT\Jwt;
-use ReallySimpleJWT\Validate;
-use ReallySimpleJWT\Encode;
-
 class User extends CI_Controller {
     
     public function __construct()
@@ -16,51 +10,36 @@ class User extends CI_Controller {
         
         $this->load->helper('email');
         $this->load->helper('url');
+        $this->load->helper('jwt');
         $this->load->model('user_model');
     }
     
-    public function test()
+    private function _auth()
     {
-        $user_id = 12;
-        $secret = 'sec!ReT423*&';
-        $expiration = time() + 3600;
-        $issuer = 'localhost';
-        
-        $token = Token::create($user_id, $secret, $expiration, $issuer);
-        
-        echo $token;
-    }
-    
-    public function validate()
-    {
-        $token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMiwiaXNzIjoibG9jYWxob3N0IiwiZXhwIjoiMjAxOS0wNi0yNyAwMzoxMjoxOCIsInN1YiI6bnVsbCwiYXVkIjpudWxsfQ.9XEmSxbVY6HfMjKctS5TL7eFgJmU2v3HaRZtEkkq6VY';
-        $secret = 'sec!ReT423*&';
-
-        $jwt = new Jwt($token, $secret);
-
-        $parse = new Parse($jwt, new Validate(), new Encode());
-
-        $parsed = $parse->validate()
-            ->validateExpiration()
-            ->validateNotBefore()
-            ->parse();
-
-        // Return the token header claims as an associative array.
-        $header = $parsed->getHeader();
-
-        // Return the token payload claims as an associative array.
-        $payload = $parsed->getPayload();
-        
-        print_r($header);
-        print_r($payload);
+        $result = jwt_validate_token();
+        if ( ! $result)
+        {
+            return FALSE;
+        }
+        return $result['payload'];
     }
     
     public function signup()
     {
         $raw_input = $this->input->raw_input_stream;
         
-        // decode json as array
-        $input = json_decode($raw_input, TRUE);
+        if ($raw_input)
+        {
+            // decode json as array
+            $input = json_decode($raw_input, TRUE);
+        }
+        else
+        {
+            $error = array('Empty input');
+            $this->output->set_status_header(400);
+            return $this->load->view('json_error', array('error' => json_encode($error)));
+        }
+        
         
         $result = $this->user_model->create_user($input);
         
@@ -74,7 +53,7 @@ class User extends CI_Controller {
             send_email($recipient, $subject, $message);
             
             $this->output->set_status_header(200);
-            $this->load->view('json_success');
+            $this->load->view('json_success', array('data' => '[]'));
         }
         else
         {
@@ -102,22 +81,47 @@ class User extends CI_Controller {
     {
         $raw_input = $this->input->raw_input_stream;
         
-        // decode json as array
-        $input = json_decode($raw_input, TRUE);
-        
-        $result = $this->user_model->login($input);
-        
-        // if user created successfully
-        if (is_int($result))
+        if ($raw_input)
         {
-            $data = array('user_id' => $result);
-            $this->output->set_status_header(200);
+            // decode json as array
+            $input = json_decode($raw_input, TRUE);
+        }
+        else
+        {
+            $error = array('Empty input');
+            $this->output->set_status_header(400);
+            return $this->load->view('json_error', array('error' => json_encode($error)));
+        }
+        
+        $result = $this->user_model->login_user($input);
+        $this->output->set_status_header(200);
+        
+        // if user login successfully
+        if ($result['success'])
+        {
+            $data = $result['data'];
+            $jwt_token = jwt_get_token($data['user_id']);
+            $data['jwt_token'] = $jwt_token;
             $this->load->view('json_success', array('data' => json_encode($data)));
         }
         else
         {
-            $this->output->set_status_header(400);
-            $this->load->view('json_error', array('error' => json_encode($result)));
+            $error = $result['error'];
+            $this->load->view('json_error', array('error' => json_encode($error)));
         }
+    }
+    
+    public function profile()
+    {
+        $payload = $this->_auth();
+        if ( ! $payload)
+        {
+            $this->output->set_status_header(403);
+            $error = array('Access denied');
+            return $this->load->view('json_error', array('error' => json_encode($error)));
+        }
+        $user_id = $payload['user_id'];
+        $data = $this->user_model->get_profile($user_id);
+        $this->load->view('json_success', array('data' => json_encode($data)));
     }
 }

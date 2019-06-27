@@ -1,6 +1,6 @@
 {
     "success" : true,
     "error" : [],
-    "data" : []
+    "data" : <?php echo $data; ?>
 
 }

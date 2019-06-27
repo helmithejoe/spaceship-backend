@@ -1,7 +1,8 @@
 {
 	"description": "Spaceship Exam Application",
 	"require": {
-		"php": ">=7.1"
+		"php": ">=7.1",
+		"rbdwllr/reallysimplejwt": "^2.0"
 	},
 	"suggest": {
 		"paragonie/random_compat": "Provides better randomness in PHP 5.x"
