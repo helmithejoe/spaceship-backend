@@ -27,10 +27,18 @@ class Migration_Add_users extends CI_Migration {
                 'type' => 'VARCHAR',
                 'constraint' => '100'
             ),
+            'bio' => array(
+                'type' => 'VARCHAR',
+                'constraint' => '255'
+            ),
             'active_flag' => array(
                 'type' => 'VARCHAR',
                 'constraint' => '1',
                 'default' => '0'
+            ),
+            'last_activity' => array(
+                'type' => 'INT',
+                'unsigned' => TRUE
             )
         ));
         

@@ -45,10 +45,17 @@ class Base_model extends CI_Model {
         return $this->db->update($table, $data, $where);
     }
     
-    protected function get_data($table, $where)
+    protected function get_data($table, $where, $single = TRUE)
     {
         $query = $this->db->get_where($table, $where);
         $where = $this->db->escape_str($where);
-        return $query->row();
+        if ( ! $single)
+        {
+            return $query->result();
+        }
+        else
+        {
+            return $query->row();
+        }
     }
 }

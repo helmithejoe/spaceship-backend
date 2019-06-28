@@ -26,6 +26,9 @@ class User extends CI_Controller {
     
     public function signup()
     {
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Headers: *');
+        
         $raw_input = $this->input->raw_input_stream;
         
         if ($raw_input)
@@ -36,7 +39,6 @@ class User extends CI_Controller {
         else
         {
             $error = array('Empty input');
-            $this->output->set_status_header(400);
             return $this->load->view('json_error', array('error' => json_encode($error)));
         }
         
@@ -52,12 +54,10 @@ class User extends CI_Controller {
             $recipient = $result['email'];
             send_email($recipient, $subject, $message);
             
-            $this->output->set_status_header(200);
             return $this->load->view('json_success', array('data' => '[]'));
         }
         else
         {
-            $this->output->set_status_header(400);
             return $this->load->view('json_error', array('error' => json_encode($result['error'])));
         }
     }
@@ -79,6 +79,9 @@ class User extends CI_Controller {
     
     public function login()
     {
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Headers: *');
+        
         $raw_input = $this->input->raw_input_stream;
         
         if ($raw_input)
@@ -89,12 +92,10 @@ class User extends CI_Controller {
         else
         {
             $error = array('Empty input');
-            $this->output->set_status_header(400);
             return $this->load->view('json_error', array('error' => json_encode($error)));
         }
         
         $result = $this->user_model->login_user($input);
-        $this->output->set_status_header(200);
         
         // if user login successfully
         if ($result['success'])
@@ -113,20 +114,60 @@ class User extends CI_Controller {
     
     public function profile()
     {
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Headers: *');
+        
         $payload = $this->_auth();
+        
         if ( ! $payload)
         {
-            $this->output->set_status_header(403);
-            $error = array('Access denied');
+            $error = array('Unauthorized access');
             return $this->load->view('json_error', array('error' => json_encode($error)));
         }
         $user_id = $payload['user_id'];
         $result = $this->user_model->get_profile($user_id);
+        //$this->user_model->update_last_activity($user_id);
         if ( ! $result)
         {
             $error = array('User not found');
             return $this->load->view('json_error', array('error' => json_encode($error)));
         }
+        return $this->load->view('json_success', array('data' => json_encode($result)));
+    }
+    
+    public function online_users()
+    {
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Headers: *');
+        
+        $payload = $this->_auth();
+        
+        if ( ! $payload)
+        {
+            $error = array('Unauthorized access');
+            return $this->load->view('json_error', array('error' => json_encode($error)));
+        }
+        $user_id = $payload['user_id'];
+        $result = $this->user_model->get_online_users();
+        //$this->user_model->update_last_activity($user_id);
+        return $this->load->view('json_success', array('data' => json_encode($result)));
+    }
+    
+    public function update_last_activity()
+    {
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Headers: *');
+        
+        $payload = $this->_auth();
+        
+        if ( ! $payload)
+        {
+            $error = array('Unauthorized access');
+            return $this->load->view('json_error', array('error' => json_encode($error)));
+        }
+        $user_id = $payload['user_id'];
+        $result = array();
+        $this->user_model->update_last_activity($user_id);
         return $this->load->view('json_success', array('data' => json_encode($result)));
     }
 }

@@ -31,6 +31,11 @@ class User_model extends Base_model {
             'required|alpha|max_length[100]'
         );
         $this->form_validation->set_rules(
+            'bio',
+            'Bio',
+            'required|max_length[255]'
+        );
+        $this->form_validation->set_rules(
             'password',
             'Password',
             'required|max_length[100]|min_length[8]'
@@ -143,6 +148,20 @@ class User_model extends Base_model {
         if ( ! $user) return FALSE;
         unset($user->password);
         return $user;
+    }
+    
+    public function update_last_activity($user_id)
+    {
+        $data['last_activity'] = time();
+        $where = array('id' => $user_id);
+        return $this->update_data($this->_table, $data, $where);
+    }
+    
+    public function get_online_users()
+    {
+        $this->db->select('first_name, last_name, bio');
+        $where = array('last_activity >=' => time() - 60);
+        return $this->get_data($this->_table, $where, FALSE);
     }
     
 }
