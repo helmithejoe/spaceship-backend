@@ -18,7 +18,7 @@ class User extends CI_Controller {
     }
     
     /**
-    * function to authenticate all protected resource
+    * function to authenticate all protected resources
     */
     private function _auth()
     {   
@@ -113,6 +113,8 @@ class User extends CI_Controller {
             $data = $result['data'];
             $jwt_token = jwt_get_token($data['user_id']);
             $data['jwt_token'] = $jwt_token;
+            // update last activity time
+            $this->user_model->update_last_activity($user_id);
             return $this->load->view('json_success', array('data' => json_encode($data)));
         }
         else
