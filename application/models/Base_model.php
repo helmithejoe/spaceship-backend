@@ -1,6 +1,10 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
+/**
+* a base class for all models.
+* This class provide common functions for all models
+*/
 class Base_model extends CI_Model {
     
     public function __construct()
@@ -11,10 +15,14 @@ class Base_model extends CI_Model {
         // load database class
         $this->load->database();
         
+        // load validation library
         $this->load->library('form_validation');
         $this->form_validation->set_error_delimiters(',', ',');
     }
     
+    /**
+    * transforms error string collection into array
+    */
     protected function parse_errors($errors)
     {
         $error_list = explode(',', $errors);

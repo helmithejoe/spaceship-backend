@@ -1,6 +1,9 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
+/**
+* helper to make sending email more easy
+*/
 function send_email($recipient, $subject, $message)
 {
     $CI =& get_instance();

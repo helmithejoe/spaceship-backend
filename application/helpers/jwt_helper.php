@@ -27,6 +27,7 @@ function jwt_validate_token()
     $CI =& get_instance();
     $CI->load->config('jwt');
     
+    // using HTTP header Authorization: Bearer ...token
     $auth = $CI->input->get_request_header('Authorization', TRUE);
     $token = str_replace('Bearer ', '', $auth);
     $secret = $CI->config->item('jwt_secret');

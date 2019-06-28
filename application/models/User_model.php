@@ -13,6 +13,10 @@ class User_model extends Base_model {
         parent::__construct();
     }
     
+    /**
+    * set validation rules here
+    * to be more managable
+    */
     private function _set_validation_rules() {
         $this->form_validation->set_rules(
             'email',

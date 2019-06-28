@@ -8,14 +8,21 @@ class User extends CI_Controller {
         // construct the parent class
         parent::__construct();
         
+        // load helpers
         $this->load->helper('email');
         $this->load->helper('url');
         $this->load->helper('jwt');
+        
+        // load user model
         $this->load->model('user_model');
     }
     
+    /**
+    * function to authenticate all protected resource
+    */
     private function _auth()
-    {
+    {   
+        // JWT validation (more details in jwt helper)
         $result = jwt_validate_token();
         if ( ! $result)
         {
@@ -26,9 +33,11 @@ class User extends CI_Controller {
     
     public function signup()
     {
+        // add CORS compatibility
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Headers: *');
         
+        // get raw input
         $raw_input = $this->input->raw_input_stream;
         
         if ($raw_input)
@@ -41,7 +50,6 @@ class User extends CI_Controller {
             $error = array('Empty input');
             return $this->load->view('json_error', array('error' => json_encode($error)));
         }
-        
         
         $result = $this->user_model->create_user($input);
         
@@ -79,9 +87,11 @@ class User extends CI_Controller {
     
     public function login()
     {
+        // add CORS compatibility
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Headers: *');
         
+        // get raw input
         $raw_input = $this->input->raw_input_stream;
         
         if ($raw_input)
@@ -114,9 +124,11 @@ class User extends CI_Controller {
     
     public function profile()
     {
+        // add CORS compatibility
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Headers: *');
         
+        // validate request auth
         $payload = $this->_auth();
         
         if ( ! $payload)
@@ -137,6 +149,7 @@ class User extends CI_Controller {
     
     public function online_users()
     {
+        // add CORS compatibility
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Headers: *');
         
@@ -158,6 +171,7 @@ class User extends CI_Controller {
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Headers: *');
         
+        // validate request auth
         $payload = $this->_auth();
         
         if ( ! $payload)
